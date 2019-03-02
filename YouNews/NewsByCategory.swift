@@ -23,8 +23,6 @@ UICollectionViewDelegateFlowLayout
     @IBOutlet weak var titleLabel: UILabel!
     
     let refreshControl = UIRefreshControl()
-
-    
     
     /* Variables */
     var category = ""
@@ -35,11 +33,10 @@ UICollectionViewDelegateFlowLayout
    
     
 override func viewDidLoad() {
-        super.viewDidLoad()
+    super.viewDidLoad()
 
     // Set title
     titleLabel.text = category.uppercased()
-    
     
     
     // Set cellSize based on device used
@@ -53,12 +50,19 @@ override func viewDidLoad() {
     
     
     // Init refreshControl for CollectionView
+    /* bounce back when touching the scroll ends */
     newsCollView.alwaysBounceVertical = true
+    
     refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh")
     refreshControl.tintColor = MAIN_COLOR
+    /* call queryNews for valueChanged event
+     * default action: pull-down to refresh
+     * default is spinner
+     */
     refreshControl.addTarget(self, action: #selector(queryNews), for: .valueChanged)
-    newsCollView.addSubview(refreshControl)
     
+    /* adds View at the end of the list */
+    newsCollView.addSubview(refreshControl)
     
     // Call query
     queryNews()
@@ -69,17 +73,19 @@ override func viewDidLoad() {
 // MARK: - QUERY NEWS
 @objc func queryNews() {
     showHUD("Please wait...")
-        
+    
     let query = PFQuery(className: NEWS_CLASS_NAME)
     query.whereKey(NEWS_CATEGORY, equalTo: category)
+    /* at most 1000 objects to return */
     query.limit = 1000
+    /* latest news comes first */
     query.order(byDescending: "createdAt")
     query.findObjectsInBackground { (objects, error) in
         if error == nil {
             self.newsArray = objects!
             self.hideHUD()
             self.newsCollView.reloadData()
-                
+            
             self.refreshControl.endRefreshing()
                 
         } else {
@@ -87,9 +93,7 @@ override func viewDidLoad() {
             self.hideHUD()
     }}
 }
-    
-    
-    
+
     
 // MARK: - COLLECTION VIEW DELEGATES
 func numberOfSections(in collectionView: UICollectionView) -> Int {
