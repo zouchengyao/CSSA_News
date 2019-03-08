@@ -10,21 +10,21 @@
 import UIKit
 import Parse
 
-
+/*
+ define two data structures that wrapped the sys-wide classes
+ just need to call these classes for simpilcity and easiness
+ 
+ */
 
 // MARK: - COMMENT CUSTOM CELL
 class CommentCell: UITableViewCell {
     /* Views */
+//    https://www.jianshu.com/p/d61a0a2220f0
     @IBOutlet weak var cAvatarImage: UIImageView!
     @IBOutlet weak var cUsernameLabel: UILabel!
     @IBOutlet weak var cCommentTx: UITextView!
     @IBOutlet weak var cDateLabel: UILabel!
 }
-
-
-
-
-
 
 // MARK: - COMMENTS CONTROLLER
 class Comments: UIViewController,
@@ -52,9 +52,20 @@ UITextFieldDelegate
   
 
 override func viewDidAppear(_ animated: Bool) {
+    // https://developer.apple.com/documentation/foundation/timer/1412416-scheduledtimer
+    // Creates a timer and schedules it on the current run loop in the default mode.
+    // https://blog.csdn.net/liumude123/article/details/54571895
+    
     Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(queryComments), userInfo: nil, repeats: false)
+    
+    
 }
 
+    
+// https://blog.csdn.net/weasleyqi/article/details/8090373   ViewController 生命周期
+// https://www.jianshu.com/p/d0446ebc7451
+    
+    
 override func viewDidLoad() {
     super.viewDidLoad()
     
@@ -68,6 +79,9 @@ override func viewDidLoad() {
     
     
     // INIT A TOOLBAR TO TYPE AND SEND COMMENTS
+    // https://developer.apple.com/documentation/uikit/uitoolbar#1652878
+    // https://developer.apple.com/documentation/uikit/uiview/1622616-addsubview
+    // 主要为手动添加Layout
     let toolbar = UIView(frame: CGRect(x: 0,
                                        y: view.frame.size.height+44,
                                        width: view.frame.size.width,
@@ -85,13 +99,14 @@ override func viewDidLoad() {
     let sendButt = UIButton(frame: CGRect(x: toolbar.frame.size.width - 100,
                                           y: 0,
                                           width: 44, height: 44))
+    
     sendButt.setTitle("Send", for: .normal)
     sendButt.setTitleColor(UIColor.darkGray, for: .normal)
     sendButt.titleLabel?.font = UIFont(name: "Titillium-Semibold", size: 14)
     sendButt.addTarget(self, action: #selector(sendCommentButt), for: .touchUpInside)
     toolbar.addSubview(sendButt)
     
-    // Add a Dismiss keyboard button
+    // Add a Dismiss keyboard button - X
     let dismissButt = UIButton(frame: CGRect(x: toolbar.frame.size.width - 50, y: 0, width: 44, height: 44))
     dismissButt.setBackgroundImage(UIImage(named: "hide_keyboard_butt"), for: .normal)
     dismissButt.addTarget(self, action: #selector(dismissKeyboard), for: .touchUpInside)
@@ -112,13 +127,19 @@ override func viewDidLoad() {
     fakeTxt.inputAccessoryView = toolbar
 }
     
-    
-    
-    
 // MARK: - QUERY COMMENTS
+/*
+ This function helps to retrieve the comments from the
+ */
+
 @objc func queryComments() {
     showHUD("Please wait...")
-        
+    // showHUD() usage:
+    // https://www.cnblogs.com/chglog/p/4667165.html
+    // PFQuery() usage:
+    // https://www.cnblogs.com/chglog/p/4667165.html
+    // Offical Docs
+    // https://parseplatform.org
     let query = PFQuery(className: COMMENTS_CLASS_NAME)
     query.whereKey(COMMENTS_NEWS_POINTER, equalTo: newsObj)
     query.whereKey(COMMENTS_IS_REPORTED, equalTo: false)
@@ -133,12 +154,21 @@ override func viewDidLoad() {
             self.hideHUD()
     }}
 }
+ 
+/*
+ Func below are
+ */
     
     
 // MARK: - COMMENTS TABLEVIEW DELEGATES
+// https://www.jianshu.com/p/7a320ebaaecb
+// https://developer.apple.com/documentation/uikit/uitableviewdatasource/1614860-numberofsections
+// -> return a Int
 func numberOfSections(in tableView: UITableView) -> Int {
     return 1
 }
+
+//  https://developer.apple.com/documentation/uikit/uitableviewdatasource/1614931-tableview
 func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
     return commentsArray.count
 }
@@ -190,7 +220,7 @@ func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) ->
     
     
     
-    
+// this is calling when the cell is tapped
 // MARK: -  CELL HAS BEEN TAPPED -> ASK TO REPORT OR DELETE YOUR OWN COMMENT
 func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
     var commObj = PFObject(className: COMMENTS_CLASS_NAME)
@@ -260,9 +290,11 @@ func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
     
     
     
-    
-    
+    // https://zhuanlan.zhihu.com/p/22718649
+    // 关于 becomeFirstResponder 的教程
+
 // MARK: - TEXTFIELD DELEGATES
+// https://developer.apple.com/documentation/uikit/uiresponder/1621113-becomefirstresponder
 func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
     commentTxt.becomeFirstResponder()
 return true
@@ -271,12 +303,6 @@ return true
 func textFieldDidBeginEditing(_ textField: UITextField) {
     commentTxt.becomeFirstResponder()
 }
-    
-
-    
-    
-    
-    
     
     
 // MARK: - SEND COMMENT BUTTON
@@ -316,10 +342,8 @@ func textFieldDidBeginEditing(_ textField: UITextField) {
 }
     
     
-    
-    
    
-    
+    // helper function that can dismiss keyboard
 // MARK: - DISMISS KEYBAORD
 @objc func dismissKeyboard() {
     fakeTxt.resignFirstResponder()
