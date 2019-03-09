@@ -15,7 +15,7 @@ import AudioToolbox
 
 
 // MARK: - NEWS CELL
-class NewsCell: UICollectionViewCell  {
+class NewsCell: UICollectionViewCell  { // UICollectionViewCell是放在CollectionView的一个data item
     /* Views */
     @IBOutlet weak var newsImage: UIImageView!
     @IBOutlet weak var titleLabel: UILabel!
@@ -30,19 +30,19 @@ class NewsCell: UICollectionViewCell  {
 
 
 // MARK: - HOME CONTROLLER
-class Home: UIViewController,
-UICollectionViewDataSource,
+class Home: UIViewController, // 这里是继承UIViewController这个class
+UICollectionViewDataSource, //以下是使用UIViewController里的接口(protocol)
 UICollectionViewDelegate,
 UICollectionViewDelegateFlowLayout
 {
     
     /* Views */
     
-    @IBOutlet weak var titleLabel: UILabel!
-    @IBOutlet weak var newsCollView: UICollectionView!
-    @IBOutlet weak var demoImg: UIImageView!
+    @IBOutlet weak var titleLabel: UILabel! //标题label
+    @IBOutlet weak var newsCollView: UICollectionView! //新闻CollectionView 里面包含NewsCell
+    @IBOutlet weak var demoImg: UIImageView! //图片
     
-    let refreshControl = UIRefreshControl()
+    let refreshControl = UIRefreshControl() //UIRefreshControl是一个专门用于scrollview的 standard control
     
     @IBOutlet weak var latestOutlet: UIButton!
     @IBOutlet weak var mostReadOutlet: UIButton!
@@ -50,9 +50,9 @@ UICollectionViewDelegateFlowLayout
     
     
     /* Variables */
-    var newsArray = [PFObject]()
-    var cellSize = CGSize()
-    var isLatest = true
+    var newsArray = [PFObject]() //用来存news的一个有PFObejct的array，每一个PFObject有key-value这样的数据。 PFObject是Parse的object，每一个news的attribute看Configs.swift的line 127-135
+    var cellSize = CGSize() //A structure that contains width and height values. 一个新闻cell的size
+    var isLatest = true // flag bool值决定queryNews如何更新新闻
     
     
     
@@ -87,6 +87,7 @@ override func viewDidLoad() {
     
     
     // Set cellSize based on device used
+    //获取用户的屏幕大小然后设置cell size
     if UIDevice.current.userInterfaceIdiom == .phone {
         // iPhone
         cellSize = CGSize(width: view.frame.size.width - 20, height: 230)
@@ -100,7 +101,7 @@ override func viewDidLoad() {
     newsCollView.alwaysBounceVertical = true
     refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh")
     refreshControl.tintColor = MAIN_COLOR
-    refreshControl.addTarget(self, action: #selector(queryNews), for: .valueChanged)
+    refreshControl.addTarget(self, action: #selector(queryNews), for: .valueChanged) //refresh的handler是queryNews，每次刷新都会call
     newsCollView.addSubview(refreshControl)
     
     
@@ -117,17 +118,17 @@ override func viewDidLoad() {
     isLatest = true
     latestOutlet.setTitleColor(MAIN_COLOR, for: .normal)
     mostReadOutlet.setTitleColor(UIColor.lightGray, for: .normal)
-    queryNews()
+    queryNews() //点一下latestButton call queryNews更新新闻
 }
     
     
 
 // MARK: - MOST READ NEWS BUTTONS
 @IBAction func mostReadButt(_ sender: Any) {
-    isLatest = false
+    isLatest = false //注意这里把flag设成false
     latestOutlet.setTitleColor(UIColor.lightGray, for: .normal)
     mostReadOutlet.setTitleColor(MAIN_COLOR, for: .normal)
-    queryNews()
+    queryNews() //call queryNews
 }
     
     
@@ -137,11 +138,12 @@ override func viewDidLoad() {
     
 // MARK: - QUERY LATEST NEWS
 @objc func queryNews() {
-    showHUD("Please wait...")
+    showHUD("Please wait...") //这是原作者自己写的UIControlView的func 具体看Configs.swift line 79
     
-    let query = PFQuery(className: NEWS_CLASS_NAME)
+    let query = PFQuery(className: NEWS_CLASS_NAME) //The PFQuery class defines a query that is used to query for PFObjects.
     
     // Query latest news
+    //取决于isLatest的值
     if isLatest {
         query.limit = 20
         query.order(byDescending: "createdAt")
@@ -151,19 +153,20 @@ override func viewDidLoad() {
         query.order(byDescending: NEWS_READ)
         query.limit = 10
     }
-    
+    //findObjectsInBackground:  Finds objects asynchronously and sets the NSArray of PFObject objects as a result of the task.
     query.findObjectsInBackground { (objects, error) in
         if error == nil {
             self.newsArray = objects!
             self.hideHUD()
             self.newsCollView.reloadData()
-            
             self.refreshControl.endRefreshing()
             
         } else {
             self.simpleAlert("\(error!.localizedDescription)")
             self.hideHUD()
-    }}
+        }
+        
+    }
 }
     
     
@@ -171,6 +174,9 @@ override func viewDidLoad() {
     
     
 // MARK: - COLLECTION VIEW DELEGATES
+//下面是newsCollView的delegates
+//关于delegates https://www.appcoda.com/swift-delegate/
+
 func numberOfSections(in collectionView: UICollectionView) -> Int {
     return 1
 }
@@ -180,6 +186,8 @@ func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection s
 }
     
 func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+    
+    //Returns a reusable cell object located by its identifier
     let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "NewsCell", for: indexPath) as! NewsCell
     
     // Get ParseObject
@@ -220,6 +228,7 @@ func collectionView(_ collectionView: UICollectionView, layout collectionViewLay
     
     
 // TAP ON A CELL -> SEE NEWS DETAILS
+//选中news后，跳转到NewsDetail页面
 func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
     var nObj = PFObject(className: NEWS_CLASS_NAME)
     nObj = newsArray[indexPath.row]
@@ -234,6 +243,7 @@ func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPat
     
     
 // MARK: - CATEGORY BUTTON
+//选中categoryh1后 跳转到对应category的页面
 @IBAction func categoryButt(_ sender: UIButton) {
     let butt = sender
     let aVC = storyboard?.instantiateViewController(withIdentifier: "NewsByCategory") as! NewsByCategory
