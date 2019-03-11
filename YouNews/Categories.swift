@@ -14,6 +14,7 @@ import AudioToolbox
 
 
 // MARK: - CATEGORY CELL
+//catrgory class的cell，每一个category有一个Image 和 label
 class CategoryCell: UITableViewCell {
     /* Views */
     @IBOutlet weak var catImage: UIImageView!
@@ -33,6 +34,7 @@ UITableViewDataSource
 
     /* Views */
     @IBOutlet weak var categoriesTableView: UITableView!
+    //用TableView
 //    let adMobBannerView = GADBannerView()
 
     
@@ -53,6 +55,8 @@ override func viewDidLoad() {
     
    
 // MARK: - TABLEVIEW DELEGATES
+//关于delegate https://www.appcoda.com/swift-delegate/
+    
 func numberOfSections(in tableView: UITableView) -> Int {
     return 1
 }
@@ -77,6 +81,7 @@ func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) ->
     
     
 // MARK: - CELL TAPPED -> SHOW NEWS BY CATEGORY
+//选中category之后跳转到对应category的新闻页面
 func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
     let aVC = storyboard?.instantiateViewController(withIdentifier: "NewsByCategory") as! NewsByCategory
     aVC.category = "\(newsCategories[indexPath.row])"
