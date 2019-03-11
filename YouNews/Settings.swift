@@ -72,11 +72,12 @@ func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> U
     case 0:
         cell.upperLabel.text = "Your Profile"
         if PFUser.current() != nil {
-            // Display user's username and avatar if the user has logged in
+            // Display user's username and get user's avatar if the user has logged in
             cell.lowerLabel.text = PFUser.current()!.username
             let imageFile = PFUser.current()![USER_AVATAR] as? PFFile
             imageFile?.getDataInBackground(block: { (data, error) in
                 if error == nil { if let imageData = data {
+                    // Display user's avatar
                     cell.sImage.image = UIImage(data: imageData)
             }}})
             
@@ -162,11 +163,9 @@ func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let shareItems = [messageStr, img] as [Any]
         
         let activityViewController = UIActivityViewController(activityItems: shareItems, applicationActivities: nil)
-        /** applicationActivities
-         *  An array of UIActivity objects representing the custom services that your application supports. This parameter may be nil.
-         */
+        // Exclude the following activitytypes
         activityViewController.excludedActivityTypes = [.print, .postToWeibo, .copyToPasteboard, .addToReadingList, .postToVimeo]
-        
+        // Share with others
         if UIDevice.current.userInterfaceIdiom == .pad {
             // iPad
             let popOver = UIPopoverController(contentViewController: activityViewController)

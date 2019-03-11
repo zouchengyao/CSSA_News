@@ -35,9 +35,10 @@ override func viewDidLoad() {
     let imageFile = currUser[USER_AVATAR] as? PFFile
     imageFile?.getDataInBackground(block: { (data, error) in
         if error == nil { if let imageData = data {
+            // Display user's avatar
             self.avatarImg.image = UIImage(data: imageData)
     }}})
-
+    // Display user's current username and email
     usernameTxt.text = "\(currUser[USER_USERNAME]!)"
     emailTxt.text = "\(currUser[USER_EMAIL]!)"
 
@@ -52,22 +53,27 @@ override func viewDidLoad() {
     
 // MARK: - CHANGE AVATAR BUTTON
 @IBAction func changeAVatarButt(_ sender: Any) {
-    
+    // Build alert framework
     let alert = UIAlertController(title: APP_NAME,
         message: "Select Source",
         preferredStyle: .alert)
-    
+    // Set camera action (Take a picture)
     let camera = UIAlertAction(title: "Take a picture", style: .default, handler: { (action) -> Void in
-        
+        // Verify that the device is capable of picking content from the desired source
         if UIImagePickerController.isSourceTypeAvailable(.camera) {
+            /** UIImagePickerController
+             A view controller that manages the system interfaces for taking pictures, recording movies, and choosing items from the user's media library.
+             */
             let imagePicker = UIImagePickerController()
             imagePicker.delegate = self
+            // Sourcetype : the source to pick an image.
             imagePicker.sourceType = .camera;
             imagePicker.allowsEditing = false
+            // Present the user interface
             self.present(imagePicker, animated: true, completion: nil)
         }
     })
-    
+    // Set library action (Pick from library)
     let library = UIAlertAction(title: "Pick from Library", style: .default, handler: { (action) -> Void in
         
         if UIImagePickerController.isSourceTypeAvailable(.photoLibrary) {
@@ -81,7 +87,7 @@ override func viewDidLoad() {
     
     // Cancel button
     let cancel = UIAlertAction(title: "Cancel", style: .destructive, handler: { (action) -> Void in })
-
+    // Add three actions above to the alert
     alert.addAction(camera)
     alert.addAction(library)
     alert.addAction(cancel)
@@ -90,9 +96,11 @@ override func viewDidLoad() {
     
     
 // ImagePicker delegate
+    // info : A dictionary containing the original image and the edited image, if an image was picked.
 func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
     if let image = info[UIImagePickerControllerOriginalImage] as? UIImage {
         let scaledImg = resizeImage(image: image, newWidth: 300)
+        // ## Avatar image is not saved until the update profile button is tapped.
         avatarImg.image = scaledImg
     }
     dismiss(animated: true, completion: nil)
@@ -112,6 +120,7 @@ func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMe
         simpleAlert("You must insert a username and an email address to update your Profile!")
 
     } else {
+        // Resign first responder : relinquish the object's status as first responder in its window
         usernameTxt.resignFirstResponder()
         emailTxt.resignFirstResponder()
         
@@ -151,6 +160,7 @@ func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMe
 // MARK: - LIKED NEWS BUTTONS
 @IBAction func likedNewsButt(_ sender: Any) {
     let aVC = storyboard?.instantiateViewController(withIdentifier: "LikedNews") as! LikedNews
+    // Get into LikedNews interface
     navigationController?.pushViewController(aVC, animated: true)
 }
     
@@ -159,6 +169,7 @@ func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMe
     
 
 // MARK: - LOGOUT BUTTON
+    // ## The upper right button
 @IBAction func logoutButt(_ sender: Any) {
     let alert = UIAlertController(title: APP_NAME,
         message: "Are you sure you want to logout?",
@@ -166,7 +177,7 @@ func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMe
     
     let ok = UIAlertAction(title: "Logout", style: .default, handler: { (action) -> Void in
         self.showHUD("Logging Out...")
-        
+        // Logout
         PFUser.logOutInBackground(block: { (error) in
             if error == nil {
                 _ = self.navigationController?.popViewController(animated: true)
@@ -177,9 +188,9 @@ func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMe
     
     
     let cancel = UIAlertAction(title: "Cancel", style: .destructive, handler: { (action) -> Void in })
-    
     alert.addAction(ok);
     alert.addAction(cancel)
+    // display the alert containing ok and cancel actions
     present(alert, animated: true, completion: nil)
 }
     
