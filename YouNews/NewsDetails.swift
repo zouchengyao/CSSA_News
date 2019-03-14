@@ -38,127 +38,143 @@ UIScrollViewDelegate
     
     
     
-override func viewDidLoad() {
-        super.viewDidLoad()
+    override func viewDidLoad() {
+            super.viewDidLoad()
 
-    // Set top title
-    topTitleLabel.text = APP_NAME
-    
-    
-    // Call query
-    showNewsDetails()
+        // Set top title
+        topTitleLabel.text = APP_NAME
+        
+        
+        // Call query
+        showNewsDetails()
 
-    
-//    // Init ad banners
-//    initAdMobBanner()
-}
+        
+        // Init ad banners
+    //    initAdMobBanner()
+    }
 
   
     
     
     
     
-// MARK: - SHOW NEWS DETAILS
-func showNewsDetails() {
-    
-    // Get image
-    let imageFile = newsObj[NEWS_IMAGE] as? PFFile
-    imageFile?.getDataInBackground(block: { (data, error) in
-        if error == nil { if let imageData = data {
-            self.newsImg.image = UIImage(data: imageData)
-    }}})
-
-    // Get title
-    titleLabel.text = "\(newsObj[NEWS_TITLE]!)"
-    
-    // Get category
-    categoryLabel.text = "\(newsObj[NEWS_CATEGORY]!)".uppercased()
-    
-    // Get news text
-    let htmlText = "\(newsObj[NEWS_HTMLTEXT]!)"
-    newsTextWebView.loadHTMLString(htmlText, baseURL: nil)
-    newsTextWebView.scalesPageToFit = true
-
-    
-    // Get and Increment news reads
-    if newsObj[NEWS_READ] != nil {
-        newsObj.incrementKey(NEWS_READ, byAmount: 1)
-        newsObj.saveInBackground()
+    // MARK: - SHOW NEWS DETAILS
+    func showNewsDetails() {
         
-        let reads = newsObj[NEWS_READ] as! Int
-        readLabel.text = reads.abbreviated
-    } else {
-        newsObj[NEWS_READ] = 1
-        newsObj.saveInBackground()
-        readLabel.text = "1"
-    }
-    
+        // Get image
+        let imageFile = newsObj[NEWS_IMAGE] as? PFFile
+        imageFile?.getDataInBackground(block: { (data, error) in
+            if error == nil { if let imageData = data {
+                self.newsImg.image = UIImage(data: imageData)
+        }}})
 
-    
-    // Get Date
-    let date = newsObj.createdAt!
-    let dateFormat = DateFormatter()
-    dateFormat.dateFormat = "MMM dd yyyy | hh:mm a"
-    dateLabel.text = dateFormat.string(from: date)
-    
-    // Get video URL
-    if newsObj[NEWS_VIDEO_URL] != nil {
-        if "\(newsObj[NEWS_VIDEO_URL]!)" != "" {
-            playOutlet.isHidden = false
+        // Get title
+        titleLabel.text = "\(newsObj[NEWS_TITLE]!)"
+        
+        // Get category
+        categoryLabel.text = "\(newsObj[NEWS_CATEGORY]!)".uppercased()
+        
+        // Get news text
+        let htmlText = "\(newsObj[NEWS_HTMLTEXT]!)"
+        newsTextWebView.loadHTMLString(htmlText, baseURL: nil)
+        newsTextWebView.scalesPageToFit = true
+
+        
+        // Get and Increment news reads
+        if newsObj[NEWS_READ] != nil {
+            newsObj.incrementKey(NEWS_READ, byAmount: 1) // Use incrementKey for synchronization
+            newsObj.saveInBackground()
             
+            let reads = newsObj[NEWS_READ] as! Int
+            readLabel.text = reads.abbreviated
+        } else {
+            newsObj[NEWS_READ] = 1
+            newsObj.saveInBackground()
+            readLabel.text = "1"
+        }
+        
+
+        
+        // Get Date
+        let date = newsObj.createdAt!
+        let dateFormat = DateFormatter()
+        dateFormat.dateFormat = "MMM dd yyyy | hh:mm a"
+        dateLabel.text = dateFormat.string(from: date)
+        
+        // Get video URL
+        if newsObj[NEWS_VIDEO_URL] != nil {
+            if "\(newsObj[NEWS_VIDEO_URL]!)" != "" {
+                playOutlet.isHidden = false
+            } else { playOutlet.isHidden = true }
         } else { playOutlet.isHidden = true }
-    } else { playOutlet.isHidden = true }
-    
-    
-    // Get liked
-    if newsObj[NEWS_LIKED_BY] != nil && PFUser.current() != nil {
-        let likedBy = newsObj[NEWS_LIKED_BY] as! [String]
-        if likedBy.contains(PFUser.current()!.objectId!) {
-            likeOutlet.setBackgroundImage(UIImage(named: "liked_butt"), for: .normal)
+        
+        
+        // Get liked
+        if newsObj[NEWS_LIKED_BY] != nil && PFUser.current() != nil {
+            let likedBy = newsObj[NEWS_LIKED_BY] as! [String]
+            if likedBy.contains(PFUser.current()!.objectId!) {
+                likeOutlet.setBackgroundImage(UIImage(named: "liked_butt"), for: .normal)
+            }
         }
     }
     
-}
-    
     
     
 
-// WEBVIEW DELEGATE TO OPEN URL'S IN SAFARI
-func webView(_ webView: UIWebView, shouldStartLoadWith request: URLRequest, navigationType: UIWebViewNavigationType) -> Bool {
-    if navigationType == UIWebViewNavigationType.linkClicked {
-        UIApplication.shared.openURL(request.url!)
-        return false
+    // WEBVIEW DELEGATE TO OPEN URL'S IN SAFARI
+    // MARK: - NONUSED webView function
+    func webView(_ webView: UIWebView, shouldStartLoadWith request: URLRequest, navigationType: UIWebViewNavigationType) -> Bool {
+        if navigationType == UIWebViewNavigationType.linkClicked {
+            UIApplication.shared.openURL(request.url!)
+            return false
+        }
+        return true
     }
-    return true
-}
     
     
     
     
     
     
-// MARK: - LIKE BUTTON
-@IBAction func likeButt(_ sender: Any) {
-    if PFUser.current() != nil {
-        var likedBy = [String]()
-        let currUser = PFUser.current()!
-        
-        if newsObj[NEWS_LIKED_BY] != nil {
-            likedBy = newsObj[NEWS_LIKED_BY] as! [String]
-        
-            // UNLIKE THIS NEWS --------------------------------
-            if likedBy.contains(currUser.objectId!) {
-                likedBy = likedBy.filter{$0 != currUser.objectId!}
-                newsObj[NEWS_LIKED_BY] = likedBy
-                newsObj.saveInBackground(block: { (succ, error) in
-                    if error == nil {
-                        // self.simpleAlert("You've unliked this news!")
-                        self.likeOutlet.setBackgroundImage(UIImage(named: "like_butt"), for: .normal)
-                }})
-                
-                
-            // LIKE THIS NEWS --------------------------------
-            } else {
+    // MARK: - LIKE BUTTON
+    // This function is connected to likebutton in the story board
+    // it will toggle the like status of this user on this news
+    // Note: .saveInBackground method will save the status to the PFObject
+    @IBAction func likeButt(_ sender: Any) {
+        // Next line identifies whether the use is logged in
+        if PFUser.current() != nil {
+            var likedBy = [String]()
+            let currUser = PFUser.current()!
+            
+            
+            // If there are already some users liked the news
+            if newsObj[NEWS_LIKED_BY] != nil {
+                likedBy = newsObj[NEWS_LIKED_BY] as! [String] // Retrieve the array of users that liked this news
+            
+                // UNLIKE THIS NEWS --------------------------------
+                if likedBy.contains(currUser.objectId!) {
+                    likedBy = likedBy.filter{$0 != currUser.objectId!} // Filter out the current user
+                    newsObj[NEWS_LIKED_BY] = likedBy                   // update newsObj
+                    newsObj.saveInBackground(block: { (succ, error) in // 
+                        if error == nil {
+                            // self.simpleAlert("You've unliked this news!")
+                            self.likeOutlet.setBackgroundImage(UIImage(named: "like_butt"), for: .normal)
+                    }})
+                    
+                    
+                // LIKE THIS NEWS --------------------------------
+                } else {
+                    likedBy.append(currUser.objectId!)
+                    newsObj[NEWS_LIKED_BY] = likedBy
+                    newsObj.saveInBackground(block: { (succ, error) in
+                        if error == nil {
+                            // self.simpleAlert("You've liked this news!")
+                            self.likeOutlet.setBackgroundImage(UIImage(named: "liked_butt"), for: .normal)
+                    }})
+                }
+            }
+            // Otherwise create the list
+            else {
                 likedBy.append(currUser.objectId!)
                 newsObj[NEWS_LIKED_BY] = likedBy
                 newsObj.saveInBackground(block: { (succ, error) in
@@ -167,103 +183,104 @@ func webView(_ webView: UIWebView, shouldStartLoadWith request: URLRequest, navi
                         self.likeOutlet.setBackgroundImage(UIImage(named: "liked_butt"), for: .normal)
                 }})
             }
-        } else {
-            likedBy.append(currUser.objectId!)
-            newsObj[NEWS_LIKED_BY] = likedBy
-            newsObj.saveInBackground(block: { (succ, error) in
-                if error == nil {
-                    // self.simpleAlert("You've liked this news!")
-                    self.likeOutlet.setBackgroundImage(UIImage(named: "liked_butt"), for: .normal)
-            }})
-        }
+        // YOU MUST LOGIN TO LIKE NEWS!
+        } else { showLoginAlert("You need to be logged in to Like this news. Want to login now?") }
         
-        
-    // YOU MUST LOGIN TO LIKE NEWS!
-    } else { showLoginAlert("You need to be logged in to Like this news. Want to login now?") }
-    
-}
+    }
     
     
     
     
   
-// MARK: - COMMENT BUTTON
-@IBAction func commentButt(_ sender: Any) {
-    if PFUser.current() != nil {
-        let aVC = storyboard?.instantiateViewController(withIdentifier: "Comments") as! Comments
-        aVC.newsObj = newsObj
-        navigationController?.pushViewController(aVC, animated: true)
-        
-        
-    // YOU MUST LOGIN TO COMMENT!
-    } else { showLoginAlert("You need to be logged in to Comment. Want to login now?") }
-}
-
-    
-    
-    
-    
-    
-    
-// MARK: - SHARE NEWS BUTTON
-@IBAction func shareButt(_ sender: Any) {
-    let messageStr  = "\(newsObj[NEWS_TITLE]!) on #" + APP_NAME
-    let img = newsImg.image!
-    
-    let shareItems = [messageStr, img] as [Any]
-    
-    let activityViewController = UIActivityViewController(activityItems: shareItems, applicationActivities: nil)
-    activityViewController.excludedActivityTypes = [.print, .postToWeibo, .copyToPasteboard, .addToReadingList, .postToVimeo]
-    
-    if UIDevice.current.userInterfaceIdiom == .pad {
-        // iPad
-        let popOver = UIPopoverController(contentViewController: activityViewController)
-        popOver.present(from: .zero, in: self.view, permittedArrowDirections: .any, animated: true)
-    } else {
-        // iPhone
-        present(activityViewController, animated: true, completion: nil)
+    // MARK: - COMMENT BUTTON
+    // This function pops up Comments viewController to enter comments to the news
+    @IBAction func commentButt(_ sender: Any) {
+        if PFUser.current() != nil {
+            // Next line pops up comments viewController for entering comments
+            let aVC = storyboard?.instantiateViewController(withIdentifier: "Comments") as! Comments
+            aVC.newsObj = newsObj
+            navigationController?.pushViewController(aVC, animated: true)
+            
+            
+        // YOU MUST LOGIN TO COMMENT!
+        } else { showLoginAlert("You need to be logged in to Comment. Want to login now?") }
     }
 
-}
+    
+    
+    
+    
+    
+    
+    // MARK: - SHARE NEWS BUTTON
+    @IBAction func shareButt(_ sender: Any) {
+        let messageStr  = "\(newsObj[NEWS_TITLE]!) on #" + APP_NAME
+        let img = newsImg.image!
+        
+        let shareItems = [messageStr, img] as [Any]
+        
+        // Share menu pop-up, can be modified to add Wechat
+        let activityViewController = UIActivityViewController(activityItems: shareItems, applicationActivities: nil)
+        activityViewController.excludedActivityTypes = [.print, .postToWeibo, .copyToPasteboard, .addToReadingList, .postToVimeo]
+        
+        // This line tells whehter the device is iPad or iPhone
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            // iPad
+            let popOver = UIPopoverController(contentViewController: activityViewController)
+            popOver.present(from: .zero, in: self.view, permittedArrowDirections: .any, animated: true)
+        } else {
+            // iPhone
+            present(activityViewController, animated: true, completion: nil)
+        }
+
+    }
 
     
     
     
     
-// MARK: - SHOW LOGIN ALERT
-func showLoginAlert(_ mess:String) {
-        let alert = UIAlertController(title: APP_NAME,
+    // MARK: - SHOW LOGIN ALERT
+    // This function simply pops up an alert for user
+    // to choose login or not
+    // Input: mess: String the message to be displayed
+    func showLoginAlert(_ mess:String) {
+        // Pops up alert for user to deal with
+        let alert = UIAlertController(
+            title: APP_NAME,
             message: mess,
-            preferredStyle: .alert)
+            preferredStyle: .alert
+        )
         
         
         let ok = UIAlertAction(title: "Login", style: .default, handler: { (action) -> Void in
+            // Next line pops up Login controller to perform login operation
             let aVC = self.storyboard?.instantiateViewController(withIdentifier: "Login") as! Login
             self.present(aVC, animated: true, completion: nil)
         })
         
         // Cancel button
         let cancel = UIAlertAction(title: "Cancel", style: .destructive, handler: { (action) -> Void in })
-    
         alert.addAction(ok)
         alert.addAction(cancel)
         present(alert, animated: true, completion: nil)
-}
+    }
     
 
    
     
     
     
-// MARK: - PLAY VIDEO BUTTON
-@IBAction func playVideoButt(_ sender: Any) {
-    playOutlet.isHidden = true
-    videoWebView.isHidden = false
-    let youtubeLink = "\(newsObj[NEWS_VIDEO_URL]!)"
-    let videoId = youtubeLink.replacingOccurrences(of: "https://youtu.be/", with: "")
-    let embedHTML = "<iframe width='\(videoWebView.frame.size.width)' height='\(videoWebView.frame.size.height)' src='https://www.youtube.com/embed/\(videoId)?rel=0&amp;controls=0&amp;showinfo=0' frameborder='0' allowfullscreen></iframe>"
-    videoWebView.loadHTMLString(embedHTML, baseURL: nil)
-}
+    // MARK: - PLAY VIDEO BUTTON
+    // This function plays the video embedded into the news itself
+    @IBAction func playVideoButt(_ sender: Any) {
+        playOutlet.isHidden = true
+        videoWebView.isHidden = false
+        let youtubeLink = "\(newsObj[NEWS_VIDEO_URL]!)"
+        let videoId = youtubeLink.replacingOccurrences(of: "https://youtu.be/", with: "")
+        // Construct embedded HTML for video play
+        let embedHTML = "<iframe width='\(videoWebView.frame.size.width)' height='\(videoWebView.frame.size.height)' src='https://www.youtube.com/embed/\(videoId)?rel=0&amp;controls=0&amp;showinfo=0' frameborder='0' allowfullscreen></iframe>"
+        videoWebView.loadHTMLString(embedHTML, baseURL: nil)
+    }
 
     
     
@@ -272,10 +289,10 @@ func showLoginAlert(_ mess:String) {
     
     
     
-// MARK: - BACK BUTTON
-@IBAction func backButt(_ sender: Any) {
-    _ = navigationController?.popViewController(animated: true)
-}
+    // MARK: - BACK BUTTON
+    @IBAction func backButt(_ sender: Any) {
+        _ = navigationController?.popViewController(animated: true)
+    }
     
     
     
@@ -283,17 +300,18 @@ func showLoginAlert(_ mess:String) {
     
     
     
-    // MARK: - ADMOB BANNER METHODS
-//func initAdMobBanner() {
-//        adMobBannerView.adSize =  GADAdSizeFromCGSize(CGSize(width: 320, height: 50))
-//        adMobBannerView.frame = CGRect(x: 0, y: self.view.frame.size.height, width: 320, height: 50)
-//        adMobBannerView.adUnitID = ADMOB_BANNER_UNIT_ID
-//        adMobBannerView.rootViewController = self
-//        adMobBannerView.delegate = self
-//        view.addSubview(adMobBannerView)
-//        let request = GADRequest()
-//        adMobBannerView.load(request)
-//    }
+    // MARK: - UNUSED ADMOB BANNER METHODS
+    /*
+    func initAdMobBanner() {
+            adMobBannerView.adSize =  GADAdSizeFromCGSize(CGSize(width: 320, height: 50))
+            adMobBannerView.frame = CGRect(x: 0, y: self.view.frame.size.height, width: 320, height: 50)
+            adMobBannerView.adUnitID = ADMOB_BANNER_UNIT_ID
+            adMobBannerView.rootViewController = self
+            adMobBannerView.delegate = self
+            view.addSubview(adMobBannerView)
+            let request = GADRequest()
+            adMobBannerView.load(request)
+        }
     
     
     // Hide the banner
@@ -320,22 +338,22 @@ func showLoginAlert(_ mess:String) {
     }
 
     
-//    // AdMob banner available
-//    func adViewDidReceiveAd(_ view: GADBannerView) {
-//        print("AdMob loaded!")
-//        showBanner(adMobBannerView)
-//    }
-//
-//    // NO AdMob banner available
-//    func adView(_ view: GADBannerView, didFailToReceiveAdWithError error: GADRequestError) {
-//        print("AdMob Can't load ads right now, they'll be available later \n\(error)")
-//        hideBanner(adMobBannerView)
-//    }
+    // AdMob banner available
+    func adViewDidReceiveAd(_ view: GADBannerView) {
+        print("AdMob loaded!")
+        showBanner(adMobBannerView)
+    }
+
+    // NO AdMob banner available
+    func adView(_ view: GADBannerView, didFailToReceiveAdWithError error: GADRequestError) {
+        print("AdMob Can't load ads right now, they'll be available later \n\(error)")
+        hideBanner(adMobBannerView)
+    }
+    
+    */
     
     
-    
-    
-override func didReceiveMemoryWarning() {
+    override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
