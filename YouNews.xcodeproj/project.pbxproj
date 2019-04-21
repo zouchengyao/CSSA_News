@@ -132,10 +132,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				72FD72211D37D89B008CE6AE /* MessageUI.framework in Frameworks */,
 				135EE86E1F14A6AC0013AC76 /* GoogleMobileAds.framework in Frameworks */,
 				135EE8711F14A6B20013AC76 /* Bolts.framework in Frameworks */,
 				723C11D3207298D100F0F313 /* ParseFacebookUtilsV4.framework in Frameworks */,
-				72FD72211D37D89B008CE6AE /* MessageUI.framework in Frameworks */,
 				72FD721F1D37D895008CE6AE /* EventKitUI.framework in Frameworks */,
 				723C11D0207298D100F0F313 /* FBSDKCoreKit.framework in Frameworks */,
 				72FD721D1D37D891008CE6AE /* EventKit.framework in Frameworks */,
@@ -162,6 +162,13 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4960EED5226C0EC000555AFF /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		723074A61C5237A600C5DF7E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -199,6 +206,7 @@
 			children = (
 				724B97021C522DF200F7704D /* YouNews */,
 				724B97011C522DF200F7704D /* Products */,
+				4960EED5226C0EC000555AFF /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -321,6 +329,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 				Base,
 			);
